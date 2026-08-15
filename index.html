@@ -1,0 +1,1995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>The Kitty Machine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&family=Quicksand:wght@600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-cream: #fdfaf6;
+      --bg-pink-soft: #fff0f3;
+      --bg-card: rgba(255, 255, 255, 0.94);
+      --accent-pink: #ff8fab;
+      --accent-rose: #e05780;
+      --accent-rose-dark: #c83e66;
+      --accent-peach: #ffb4a2;
+      --accent-lavender: #d8bbff;
+      --accent-gold: #e5a93c;
+      --text-main: #3d3130;
+      --text-muted: #82716e;
+      --border-color: #ffd8e2;
+      --shadow-soft: 0 8px 20px -4px rgba(224, 87, 128, 0.12), 0 4px 8px -2px rgba(0, 0, 0, 0.03);
+      --shadow-card: 0 14px 28px rgba(220, 150, 165, 0.18), 0 4px 10px rgba(0, 0, 0, 0.02);
+      --radius-app: 36px;
+      --radius-card: 22px;
+      --radius-btn: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      background: #f4e8eb;
+      font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      min-height: 100dvh;
+      margin: 0;
+      overflow: hidden;
+      background-image: 
+        radial-gradient(#ffccd5 1.5px, transparent 1.5px),
+        radial-gradient(#ffe5ec 1.5px, #f6ebed 1.5px);
+      background-size: 32px 32px;
+      background-position: 0 0, 16px 16px;
+    }
+
+    #app-container {
+      width: 100%;
+      max-width: 425px;
+      height: 100vh;
+      height: 100dvh;
+      background: linear-gradient(180deg, #fff7f9 0%, #fff0f3 50%, #fdf8f7 100%);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 25px 60px -15px rgba(214, 126, 147, 0.35);
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    @media (min-width: 440px) {
+      #app-container {
+        height: 860px;
+        max-height: 94dvh;
+        border-radius: var(--radius-app);
+        border: 4px solid #ffffff;
+      }
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 18px 6px;
+      z-index: 5;
+    }
+
+    .status-badge-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .hud-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1.5px solid var(--border-color);
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text-main);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+
+    .hud-pill.streak {
+      color: #b75a00;
+      border-color: #ffe08a;
+      background: #fff9e6;
+    }
+
+    .hud-pill.paws {
+      color: var(--accent-rose);
+    }
+
+    .svg-icon {
+      display: inline-block;
+      width: 15px;
+      height: 15px;
+      stroke-width: 2;
+      stroke: currentColor;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      vertical-align: middle;
+    }
+
+    .svg-icon.filled {
+      fill: currentColor;
+      stroke: none;
+    }
+
+    .view-content {
+      flex: 1;
+      position: relative;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      display: none;
+      opacity: 0;
+      transform: scale(0.98);
+      transition: opacity 0.24s ease, transform 0.24s ease;
+      padding: 6px 16px 18px;
+    }
+
+    .view-content.active {
+      display: flex;
+      flex-direction: column;
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .view-content::-webkit-scrollbar {
+      display: none;
+    }
+
+    .app-header {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .app-title {
+      font-family: 'Quicksand', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--accent-rose);
+      letter-spacing: -0.3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .app-subtitle {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    .machine-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      max-width: 350px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .machine-cabinet {
+      width: 100%;
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-card);
+      padding: 10px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .slot-viewport {
+      width: 100%;
+      height: 220px;
+      background: linear-gradient(135deg, #fff0f3 0%, #f6e4e8 100%);
+      border-radius: 16px;
+      border: 1.5px solid #ffd0dc;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 3px 8px rgba(180, 110, 130, 0.1);
+    }
+
+    .slot-photo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+      z-index: 2;
+    }
+
+    .slot-state-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      z-index: 3;
+      background: rgba(255, 245, 247, 0.9);
+      backdrop-filter: blur(2px);
+      padding: 16px;
+      text-align: center;
+    }
+
+    .spinner-ring {
+      width: 32px;
+      height: 32px;
+      border: 3px solid rgba(224, 87, 128, 0.2);
+      border-top-color: var(--accent-rose);
+      border-radius: 50%;
+      animation: spinRing 0.75s linear infinite;
+    }
+
+    @keyframes spinRing {
+      to { transform: rotate(360deg); }
+    }
+
+    .kitty-info-box {
+      width: 100%;
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    .kitty-arrival-banner {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--accent-rose);
+      margin-bottom: 2px;
+      min-height: 15px;
+    }
+
+    .kitty-name-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .kitty-name {
+      font-family: 'Quicksand', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .rarity-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 14px;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 3px;
+    }
+
+    .rarity-common { background: #f0ebe8; color: #6f625f; border: 1px solid #ddd3cf; }
+    .rarity-cute { background: #ffe5ec; color: #d84570; border: 1px solid #ffb8c9; }
+    .rarity-very-cute { background: #efe8fa; color: #6f42c1; border: 1px solid #d4c2f0; }
+    .rarity-baby { background: #fff2cc; color: #a06e00; border: 1px solid #ffe08a; }
+    .rarity-ultra { background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; }
+    .rarity-illegal {
+      background: linear-gradient(135deg, #ffd1dc 0%, #fecfef 50%, #d8bbff 100%);
+      color: #8b0d46;
+      border: 1px solid #ff8fab;
+      box-shadow: 0 0 10px rgba(255, 143, 171, 0.5);
+    }
+
+    .kitty-power-tag {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--accent-rose);
+      margin-top: 4px;
+      display: inline-block;
+    }
+
+    .kitty-stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px 10px;
+      width: 100%;
+      margin-top: 6px;
+      padding: 6px 10px;
+      background: rgba(255, 245, 247, 0.7);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 204, 213, 0.6);
+    }
+
+    .stat-row {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .stat-label-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .stat-label-val {
+      color: var(--text-main);
+      font-weight: 800;
+    }
+
+    .stat-track {
+      height: 5px;
+      background: #f0d5db;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .stat-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ff9ebb, #e05780);
+      border-radius: 5px;
+      width: 0%;
+      transition: width 0.5s ease;
+    }
+
+    .controls-panel {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .btn-primary {
+      width: 100%;
+      min-height: 48px;
+      border: none;
+      outline: none;
+      background: linear-gradient(135deg, #ff758f 0%, #e05780 100%);
+      color: white;
+      font-family: 'Quicksand', sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      border-radius: var(--radius-btn);
+      box-shadow: 0 6px 16px rgba(224, 87, 128, 0.32);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.12s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-primary:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.85);
+      border: 1.5px solid var(--border-color);
+      color: var(--text-main);
+      font-family: 'Nunito', sans-serif;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 8px 14px;
+      border-radius: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .btn-secondary:active {
+      transform: scale(0.96);
+      background: #fff0f3;
+    }
+
+    .notice-banner {
+      width: 100%;
+      padding: 6px 10px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+      display: none;
+    }
+    .notice-info { background: #e8f4fd; color: #0369a1; border: 1px solid #bae6fd; }
+    .notice-error { background: #ffe4e6; color: #be123c; border: 1px solid #fecdd3; }
+
+    /* VIEW: COLLECTION */
+    .collection-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .collection-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding-bottom: 12px;
+    }
+
+    .card-thumb {
+      background: white;
+      border: 1.5px solid var(--border-color);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-soft);
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.15s ease;
+    }
+
+    .card-thumb:active {
+      transform: scale(0.96);
+    }
+
+    .card-thumb-img {
+      width: 100%;
+      height: 86px;
+      object-fit: cover;
+      background: #fdf0f3;
+    }
+
+    .card-thumb-body {
+      padding: 4px 6px;
+      text-align: center;
+    }
+
+    .card-thumb-name {
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--text-main);
+    }
+
+    .card-thumb-pwr {
+      font-size: 9px;
+      font-weight: 800;
+      color: var(--accent-rose);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 16px;
+      color: var(--text-muted);
+      grid-column: span 3;
+    }
+
+    /* Modal Backdrop & Sheets */
+    .modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(40, 25, 30, 0.45);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 50;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-backdrop.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-sheet {
+      width: 100%;
+      background: white;
+      border-top-left-radius: 26px;
+      border-top-right-radius: 26px;
+      padding: 16px 18px 24px;
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.15);
+      transform: translateY(100%);
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .modal-backdrop.show .modal-sheet {
+      transform: translateY(0);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .btn-icon-close {
+      background: #f5ecee;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    .detail-img-box {
+      width: 100%;
+      height: 180px;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1.5px solid var(--border-color);
+      margin-bottom: 10px;
+      position: relative;
+      background: #fdf0f3;
+    }
+
+    .detail-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    /* VIEW: BATTLE */
+    .battle-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .battle-arena-card {
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-color);
+      border-radius: var(--radius-card);
+      padding: 10px 12px;
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .fighter-column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .fighter-badge-label {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: var(--accent-rose);
+      margin-bottom: 3px;
+    }
+
+    .fighter-avatar-circle {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      border: 2.5px solid var(--border-color);
+      overflow: hidden;
+      background: #fdf0f3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .fighter-avatar-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .fighter-name-txt {
+      font-family: 'Quicksand', sans-serif;
+      font-size: 13px;
+      font-weight: 800;
+      margin-top: 4px;
+      max-width: 90px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .battle-vs-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #ffe5ec;
+      color: var(--accent-rose);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 11px;
+      border: 1px solid #ffccd5;
+    }
+
+    /* Strategy Selector */
+    .strategy-section {
+      background: white;
+      border-radius: 16px;
+      border: 1.5px solid var(--border-color);
+      padding: 8px 10px;
+    }
+
+    .strategy-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .strategy-options {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-strategy {
+      flex: 1;
+      padding: 6px 4px;
+      border-radius: 12px;
+      border: 1.5px solid #ebd4da;
+      background: #fffafb;
+      font-family: 'Nunito', sans-serif;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-main);
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s ease;
+    }
+
+    .btn-strategy.active {
+      border-color: var(--accent-rose);
+      background: #ffe8ee;
+      color: var(--accent-rose-dark);
+    }
+
+    /* Battle Logs & Rounds Box */
+    .battle-rounds-box {
+      flex: 1;
+      background: white;
+      border-radius: 16px;
+      border: 1.5px solid var(--border-color);
+      padding: 10px;
+      min-height: 135px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .round-entry {
+      background: #fff8f9;
+      border: 1px solid #ffe8ed;
+      border-radius: 10px;
+      padding: 5px 8px;
+      font-size: 11px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .round-title {
+      font-weight: 800;
+      color: var(--text-muted);
+    }
+
+    .round-score-compare {
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .round-tag-win {
+      font-size: 9px;
+      font-weight: 900;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: #e6f9ed;
+      color: #15803d;
+    }
+    .round-tag-lose {
+      font-size: 9px;
+      font-weight: 900;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: #ffebe9;
+      color: #b91c1c;
+    }
+    .round-tag-draw {
+      font-size: 9px;
+      font-weight: 900;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: #f1f5f9;
+      color: #475569;
+    }
+
+    /* Champion Picker */
+    .champion-picker-scroll {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 4px 2px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .champion-picker-scroll::-webkit-scrollbar { display: none; }
+
+    .champ-card-chip {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: white;
+      border: 1.5px solid var(--border-color);
+      border-radius: 14px;
+      padding: 4px 8px;
+      cursor: pointer;
+    }
+
+    .champ-card-chip.selected {
+      border-color: var(--accent-rose);
+      background: #ffeef2;
+    }
+
+    .champ-chip-thumb {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      height: 60px;
+      background: rgba(255, 255, 255, 0.96);
+      border-top: 1.5px solid var(--border-color);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0 8px;
+      z-index: 10;
+    }
+
+    .nav-btn {
+      flex: 1;
+      min-height: 44px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 14px;
+      gap: 3px;
+      transition: color 0.15s ease;
+    }
+
+    .nav-btn.active {
+      color: var(--accent-rose);
+    }
+
+    .nav-label {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+<div id="app-container">
+
+  <!-- TOP HUD BAR -->
+  <div class="top-bar">
+    <div class="status-badge-group">
+      <div class="hud-pill paws">
+        <svg class="svg-icon filled" viewBox="0 0 24 24">
+          <path d="M12 10.5c1.38 0 2.5-1.12 2.5-2.5S13.38 5.5 12 5.5s-2.5 1.12-2.5 2.5 1.12 2.5 2.5 2.5zm-5 1c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm10 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-8.2 4.5c-.8 0-1.5.7-1.5 1.5 0 1.9 2.1 3.5 4.7 3.5s4.7-1.6 4.7-3.5c0-.8-.7-1.5-1.5-1.5-1 0-1.7.5-3.2.5s-2.2-.5-3.2-.5z"/>
+        </svg>
+        <span id="hud-paws-count">0</span> Paws
+      </div>
+
+      <div class="hud-pill streak">
+        <svg class="svg-icon" viewBox="0 0 24 24">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+        </svg>
+        <span>Streak: <span id="hud-streak-count">0</span> (x<span id="hud-streak-multi">1</span>)</span>
+      </div>
+    </div>
+
+    <div>
+      <button class="btn-secondary" id="btn-daily-claim" style="display:none; padding: 4px 8px; font-size: 11px;">
+        <svg class="svg-icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Daily Gift
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== VIEW 1: MACHINE ==================== -->
+  <div id="view-machine" class="view-content active">
+    <div class="app-header">
+      <div class="app-title">THE KITTY MACHINE</div>
+      <div class="app-subtitle">Rescue & collect adorable companions</div>
+    </div>
+
+    <div class="machine-wrapper">
+      <div class="machine-cabinet">
+        <div class="slot-viewport">
+          <img id="slot-img" class="slot-photo" alt="Kitty" style="display: none;">
+          
+          <div class="slot-state-overlay" id="slot-loading" style="display:none;">
+            <div class="spinner-ring"></div>
+            <span id="slot-loading-text" style="font-size: 11px; font-weight: 800; color: var(--accent-rose);">Looking for kitten...</span>
+          </div>
+
+          <div id="slot-empty-prompt" style="text-align:center; color: var(--text-muted);">
+            <svg class="svg-icon" style="width:36px; height:36px; stroke-width:1.5; color: var(--accent-peach);" viewBox="0 0 24 24">
+              <rect x="2" y="4" width="20" height="16" rx="2"/>
+              <path d="M7 15h0M17 15h0M2 9.5h20M12 4v5.5"/>
+            </svg>
+            <div style="font-size: 11px; font-weight: 700; margin-top: 4px;">Press SPIN to roll</div>
+          </div>
+        </div>
+
+        <div class="kitty-info-box">
+          <div class="kitty-arrival-banner" id="kitty-banner">READY TO SPIN</div>
+          <div class="kitty-name-row">
+            <span class="kitty-name" id="kitty-name">---</span>
+          </div>
+          <div>
+            <span class="rarity-pill rarity-common" id="kitty-rarity">COMMON</span>
+          </div>
+          <div class="kitty-power-tag" id="kitty-power">POWER: --</div>
+
+          <div class="kitty-stats-grid">
+            <div class="stat-row">
+              <div class="stat-label-row"><span>Cuteness</span><span class="stat-label-val" id="val-cuteness">--</span></div>
+              <div class="stat-track"><div class="stat-fill" id="bar-cuteness"></div></div>
+            </div>
+            <div class="stat-row">
+              <div class="stat-label-row"><span>Fluffiness</span><span class="stat-label-val" id="val-fluffiness">--</span></div>
+              <div class="stat-track"><div class="stat-fill" id="bar-fluffiness"></div></div>
+            </div>
+            <div class="stat-row">
+              <div class="stat-label-row"><span>Chaos</span><span class="stat-label-val" id="val-chaos">--</span></div>
+              <div class="stat-track"><div class="stat-fill" id="bar-chaos"></div></div>
+            </div>
+            <div class="stat-row">
+              <div class="stat-label-row"><span>Baby Energy</span><span class="stat-label-val" id="val-baby">--</span></div>
+              <div class="stat-track"><div class="stat-fill" id="bar-baby"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls-panel">
+        <button class="btn-primary" id="btn-spin">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+          <span id="btn-spin-text">SPIN</span>
+        </button>
+
+        <div class="notice-banner" id="machine-notice"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== VIEW 2: COLLECTION ==================== -->
+  <div id="view-collection" class="view-content">
+    <div class="app-header">
+      <div class="app-title">KITTIES COLLECTION</div>
+      <div class="app-subtitle">Manage your shelter squad</div>
+    </div>
+
+    <div class="collection-header">
+      <span style="font-size: 12px; font-weight: 800; color: var(--text-muted);">Saved Kitties</span>
+      <span class="hud-pill" id="collection-counter">0 / 30</span>
+    </div>
+
+    <div class="collection-grid" id="collection-grid"></div>
+  </div>
+
+  <!-- ==================== VIEW 3: BATTLE ==================== -->
+  <div id="view-battle" class="view-content">
+    <div class="app-header">
+      <div class="app-title">KITTY SHOWDOWN</div>
+      <div class="app-subtitle">High stakes cuteness battle</div>
+    </div>
+
+    <div class="battle-wrapper">
+      <div class="battle-arena-card">
+        <!-- Player -->
+        <div class="fighter-column">
+          <div class="fighter-badge-label">YOU</div>
+          <div class="fighter-avatar-circle">
+            <img id="battle-player-img" class="fighter-avatar-img" style="display:none;">
+            <svg id="battle-player-ph" class="svg-icon" style="color:var(--text-muted); width:28px; height:28px;" viewBox="0 0 24 24"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+          </div>
+          <div class="fighter-name-txt" id="battle-player-name">Select Kitty</div>
+          <span style="font-size: 10px; font-weight:800; color:var(--accent-rose);" id="battle-player-power">PWR --</span>
+        </div>
+
+        <div class="battle-vs-circle">VS</div>
+
+        <!-- Opponent -->
+        <div class="fighter-column">
+          <div class="fighter-badge-label">OPPONENT</div>
+          <div class="fighter-avatar-circle">
+            <img id="battle-op-img" class="fighter-avatar-img" style="display:none;">
+            <svg id="battle-op-ph" class="svg-icon" style="color:var(--text-muted); width:28px; height:28px;" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h.01M15 9h.01M10 15a4 4 0 0 0 4 0"/></svg>
+          </div>
+          <div class="fighter-name-txt" id="battle-op-name">Mystery Kitten</div>
+          <span style="font-size: 10px; font-weight:800; color:var(--accent-rose);" id="battle-op-power">PWR --</span>
+        </div>
+      </div>
+
+      <!-- Strategy Selector -->
+      <div class="strategy-section">
+        <div class="strategy-title">
+          <span>TACTIC:</span>
+          <span id="strategy-desc" style="color:var(--accent-rose); font-weight:800;">Balanced (Normal RNG)</span>
+        </div>
+        <div class="strategy-options">
+          <button class="btn-strategy" data-risk="safe">SAFE<br><span style="font-size:9px; opacity:0.8;">-15% Var</span></button>
+          <button class="btn-strategy active" data-risk="normal">NORMAL<br><span style="font-size:9px; opacity:0.8;">Standard</span></button>
+          <button class="btn-strategy" data-risk="risky">RISKY<br><span style="font-size:9px; opacity:0.8;">+25% Swing</span></button>
+        </div>
+      </div>
+
+      <!-- Battle Rounds Box -->
+      <div class="battle-rounds-box" id="battle-rounds-box">
+        <div style="text-align: center; color: var(--text-muted); font-size: 11px; font-weight: 700;" id="battle-prompt-txt">
+          Select a fighter from below, then enter the match.
+        </div>
+      </div>
+
+      <div class="notice-banner notice-error" id="battle-risk-banner" style="display:block;">
+        ⚠️ Defeat will permanently lose your selected kitty!
+      </div>
+
+      <!-- Battle Trigger Button -->
+      <button class="btn-primary" id="btn-start-battle" disabled>
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M14.5 17.5L3 6V3h3l11.5 11.5M13 19l6 2 2-6-4.5-4.5M14.5 6.5L18 3h3v3l-3.5 3.5"/></svg>
+        <span id="btn-battle-txt">ENTER BATTLE</span>
+      </button>
+
+      <!-- Fighter Picker Horizontal -->
+      <div>
+        <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); margin-bottom: 4px;">CHOOSE FIGHTER:</div>
+        <div class="champion-picker-scroll" id="champion-picker"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: CARD DETAIL ==================== -->
+  <div class="modal-backdrop" id="card-modal-backdrop">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="rarity-pill rarity-common" id="modal-card-rarity">COMMON</span>
+        <button class="btn-icon-close" id="modal-btn-close">
+          <svg class="svg-icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="detail-img-box">
+        <img id="modal-card-img" class="detail-img" src="" alt="Kitty">
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom: 8px;">
+        <h3 style="font-family:'Quicksand'; font-size:18px; font-weight:800;" id="modal-card-name">Kitty Name</h3>
+        <span style="font-size:12px; font-weight:800; color:var(--accent-rose);" id="modal-card-power">PWR: 80</span>
+      </div>
+
+      <div class="kitty-stats-grid" id="modal-stats-grid" style="margin-bottom:12px;">
+        <div class="stat-row">
+          <div class="stat-label-row"><span>Cuteness</span><span class="stat-label-val" id="modal-stat-cute">0</span></div>
+          <div class="stat-track"><div class="stat-fill" id="modal-bar-cute"></div></div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label-row"><span>Fluffiness</span><span class="stat-label-val" id="modal-stat-fluff">0</span></div>
+          <div class="stat-track"><div class="stat-fill" id="modal-bar-fluff"></div></div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label-row"><span>Chaos</span><span class="stat-label-val" id="modal-stat-chaos">0</span></div>
+          <div class="stat-track"><div class="stat-fill" id="modal-bar-chaos"></div></div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label-row"><span>Baby Energy</span><span class="stat-label-val" id="modal-stat-baby">0</span></div>
+          <div class="stat-track"><div class="stat-fill" id="modal-bar-baby"></div></div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+        <button class="btn-secondary" id="modal-btn-reroll" style="flex:1;">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+          Re-roll Stats (15 Paws)
+        </button>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-secondary" id="modal-btn-delete" style="color:#b91c1c; border-color:#fecdd3;">
+          <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          Remove
+        </button>
+        <button class="btn-primary" id="modal-btn-battle" style="flex:1;">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M14.5 17.5L3 6V3h3l11.5 11.5M13 19l6 2 2-6-4.5-4.5"/></svg>
+          Select for Battle
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== CONFIRM DELETE SHEET ==================== -->
+  <div class="modal-backdrop" id="delete-confirm-backdrop">
+    <div class="modal-sheet" style="text-align: center;">
+      <div style="font-size:16px; font-weight:800; color:var(--text-main); margin-bottom:6px;">Remove this kitty?</div>
+      <div style="font-size:12px; color:var(--text-muted); margin-bottom:16px;">This action cannot be undone.</div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn-secondary" id="btn-cancel-delete" style="flex:1; justify-content:center;">Cancel</button>
+        <button class="btn-primary" id="btn-confirm-delete" style="flex:1; background:#e11d48; justify-content:center;">Remove</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== BOTTOM NAVIGATION ==================== -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-tab="view-machine">
+      <svg class="svg-icon" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 15h0M17 15h0M2 9.5h20M12 4v5.5"/></svg>
+      <span class="nav-label">MACHINE</span>
+    </button>
+    <button class="nav-btn" data-tab="view-collection">
+      <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+      <span class="nav-label">COLLECTION</span>
+    </button>
+    <button class="nav-btn" data-tab="view-battle">
+      <svg class="svg-icon" viewBox="0 0 24 24"><path d="M14.5 17.5L3 6V3h3l11.5 11.5M13 19l6 2 2-6-4.5-4.5"/></svg>
+      <span class="nav-label">BATTLE</span>
+    </button>
+  </nav>
+
+</div>
+
+<script>
+  /* =========================================================
+     CONFIG & CONSTANTS
+     ========================================================= */
+  const MAX_COLLECTION_SIZE = 30;
+  const SPIN_COOLDOWN_SECONDS = 10;
+  const LOAD_TIMEOUT_MS = 9000;
+  const RECENT_URLS_KEY = "recentKittenUrls";
+  const MAX_RECENT_URLS = 40;
+
+  const NAMES = [
+    "Mochi", "Miso", "Boba", "Pudding", "Tofu", "Yuzu", "Peanut",
+    "Biscuit", "Cinnamon", "Matcha", "Dumpling", "Butter", "Peaches",
+    "Yuki", "Luna", "Pip", "Clover", "Honey", "Nori", "Marshmallow",
+    "Sugarplum", "Waffles", "Sprout", "Bao", "Fika", "Kiko", "Latte",
+    "Chai", "Wasabi", "Sesame", "Pebble", "Bento", "Katsu"
+  ];
+
+  // Weighted Rarity Config
+  const RARITY_TIERS = [
+    { label: "COMMON", weight: 55, css: "rarity-common", minStat: 35, maxStat: 75, pawReward: 5 },
+    { label: "CUTE", weight: 27, css: "rarity-cute", minStat: 55, maxStat: 85, pawReward: 10 },
+    { label: "VERY CUTE", weight: 12, css: "rarity-very-cute", minStat: 70, maxStat: 92, pawReward: 18 },
+    { label: "BABY 🥺", weight: 5, css: "rarity-baby", minStat: 85, maxStat: 98, pawReward: 30 },
+    { label: "ULTRA CUTE ✨", weight: 0.9, css: "rarity-ultra", minStat: 93, maxStat: 100, pawReward: 50 },
+    { label: "ILLEGAL CUTE 🚨", weight: 0.1, css: "rarity-illegal", minStat: 98, maxStat: 100, pawReward: 100 }
+  ];
+
+  /* =========================================================
+     SAFE LOCAL STORAGE
+     ========================================================= */
+  let inMemoryState = {
+    cards: [],
+    paws: 20,
+    streak: 0,
+    highestStreak: 0,
+    lastSpinTimestamp: 0,
+    lastDailyRewardDate: "",
+    totalSpins: 0,
+    totalWins: 0,
+    totalLosses: 0,
+    recentKittenUrls: []
+  };
+
+  function safeStorageGet(key, defaultVal) {
+    try {
+      const data = localStorage.getItem("kitty_app_" + key);
+      return data !== null ? JSON.parse(data) : defaultVal;
+    } catch (e) {
+      return inMemoryState[key] !== undefined ? inMemoryState[key] : defaultVal;
+    }
+  }
+
+  function safeStorageSet(key, value) {
+    inMemoryState[key] = value;
+    try {
+      localStorage.setItem("kitty_app_" + key, JSON.stringify(value));
+    } catch (e) {}
+  }
+
+  let gameState = {
+    cards: safeStorageGet("cards", []),
+    paws: safeStorageGet("paws", 20),
+    streak: safeStorageGet("streak", 0),
+    highestStreak: safeStorageGet("highestStreak", 0),
+    lastSpinTimestamp: safeStorageGet("lastSpinTimestamp", 0),
+    lastDailyRewardDate: safeStorageGet("lastDailyRewardDate", ""),
+    totalSpins: safeStorageGet("totalSpins", 0),
+    totalWins: safeStorageGet("totalWins", 0),
+    totalLosses: safeStorageGet("totalLosses", 0)
+  };
+
+  function persistGameState() {
+    safeStorageSet("cards", gameState.cards);
+    safeStorageSet("paws", gameState.paws);
+    safeStorageSet("streak", gameState.streak);
+    safeStorageSet("highestStreak", gameState.highestStreak);
+    safeStorageSet("lastSpinTimestamp", gameState.lastSpinTimestamp);
+    safeStorageSet("lastDailyRewardDate", gameState.lastDailyRewardDate);
+    safeStorageSet("totalSpins", gameState.totalSpins);
+    safeStorageSet("totalWins", gameState.totalWins);
+    safeStorageSet("totalLosses", gameState.totalLosses);
+    updateHUD();
+  }
+
+  /* =========================================================
+     RECENT KITTEN TRACKING
+     ========================================================= */
+  function getRecentKittens() {
+    return safeStorageGet(RECENT_URLS_KEY, []);
+  }
+
+  function rememberKitten(url) {
+    if (!url) return;
+    let recent = getRecentKittens();
+    recent = recent.filter(u => u !== url);
+    recent.unshift(url);
+    if (recent.length > MAX_RECENT_URLS) {
+      recent = recent.slice(0, MAX_RECENT_URLS);
+    }
+    safeStorageSet(RECENT_URLS_KEY, recent);
+  }
+
+  /* =========================================================
+     AUDIO SYNTHESIS
+     ========================================================= */
+  const audioCtx = (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined')
+    ? new (window.AudioContext || window.webkitAudioContext)() : null;
+
+  function playTone(freq = 500, type = 'sine', duration = 0.08, gainVal = 0.05) {
+    if (!audioCtx) return;
+    try {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + duration);
+    } catch(e) {}
+  }
+
+  /* =========================================================
+     ULTRA-RELIABLE CAT IMAGE FETCHER (CATAAS + MULTI-SEED)
+     ========================================================= */
+  const CAT_TAGS = ['cute', 'kitten', 'fluffy', 'baby', 'sweet', 'sleepy', 'playful', 'tiny', 'little', 'calico', 'siamese'];
+
+  function createRandomCatImageUrl() {
+    const randomTag = CAT_TAGS[Math.floor(Math.random() * CAT_TAGS.length)];
+    const nonce = `${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+    
+    // Choose between cute tagged endpoint and high quality square cat endpoint
+    if (Math.random() > 0.5) {
+      return `https://cataas.com/cat/${randomTag}?t=${nonce}`;
+    } else {
+      return `https://cataas.com/cat?type=medium&t=${nonce}`;
+    }
+  }
+
+  function loadSingleCatImage(url) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const timeoutId = setTimeout(() => {
+        img.onload = null;
+        img.onerror = null;
+        img.src = "";
+        reject(new Error("Timeout loading cat image"));
+      }, LOAD_TIMEOUT_MS);
+
+      img.onload = () => {
+        clearTimeout(timeoutId);
+        if (img.naturalWidth && img.naturalWidth > 0) {
+          resolve(url);
+        } else {
+          reject(new Error("Invalid image dimensions"));
+        }
+      };
+
+      img.onerror = () => {
+        clearTimeout(timeoutId);
+        reject(new Error("Image failed to load"));
+      };
+
+      img.src = url;
+    });
+  }
+
+  async function fetchRandomKitten() {
+    const maxAttempts = 3;
+    let lastErr = null;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        const candidateUrl = createRandomCatImageUrl();
+        const loadedUrl = await loadSingleCatImage(candidateUrl);
+        rememberKitten(loadedUrl);
+        return loadedUrl;
+      } catch (err) {
+        lastErr = err;
+      }
+    }
+
+    throw lastErr || new Error("Couldn't find a kitty.");
+  }
+
+  /* =========================================================
+     GENERATOR HELPERS
+     ========================================================= */
+  function pickWeightedRarity() {
+    const roll = Math.random() * 100;
+    let accum = 0;
+    for (const tier of RARITY_TIERS) {
+      accum += tier.weight;
+      if (roll <= accum) return tier;
+    }
+    return RARITY_TIERS[0];
+  }
+
+  function randRange(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  function computePower(stats) {
+    return Math.round(
+      (stats.cuteness * 0.35) + 
+      (stats.fluffiness * 0.25) + 
+      (stats.chaos * 0.15) + 
+      (stats.babyEnergy * 0.25)
+    );
+  }
+
+  function generateCardObject(imageUrl) {
+    const rarity = pickWeightedRarity();
+    const name = NAMES[Math.floor(Math.random() * NAMES.length)];
+    const stats = {
+      cuteness: randRange(rarity.minStat, rarity.maxStat),
+      fluffiness: randRange(rarity.minStat, rarity.maxStat),
+      chaos: randRange(25, 95),
+      babyEnergy: randRange(rarity.minStat, rarity.maxStat)
+    };
+    const power = computePower(stats);
+
+    return {
+      id: "kitty_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5),
+      name,
+      imageUrl,
+      rarity,
+      stats,
+      power,
+      timestamp: Date.now()
+    };
+  }
+
+  /* =========================================================
+     HUD UPDATES
+     ========================================================= */
+  const hudPaws = document.getElementById("hud-paws-count");
+  const hudStreak = document.getElementById("hud-streak-count");
+  const hudStreakMulti = document.getElementById("hud-streak-multi");
+  const btnDaily = document.getElementById("btn-daily-claim");
+  const collectionCounter = document.getElementById("collection-counter");
+
+  function getStreakMultiplier(streak) {
+    if (streak >= 5) return 2.0;
+    if (streak >= 3) return 1.5;
+    if (streak >= 1) return 1.25;
+    return 1.0;
+  }
+
+  function updateHUD() {
+    hudPaws.textContent = gameState.paws;
+    hudStreak.textContent = gameState.streak;
+    hudStreakMulti.textContent = getStreakMultiplier(gameState.streak);
+    collectionCounter.textContent = `${gameState.cards.length} / ${MAX_COLLECTION_SIZE}`;
+
+    const today = new Date().toISOString().slice(0, 10);
+    if (gameState.lastDailyRewardDate !== today) {
+      btnDaily.style.display = "inline-flex";
+    } else {
+      btnDaily.style.display = "none";
+    }
+  }
+
+  btnDaily.addEventListener("click", () => {
+    const today = new Date().toISOString().slice(0, 10);
+    gameState.lastDailyRewardDate = today;
+    gameState.paws += 25;
+    gameState.lastSpinTimestamp = 0;
+    persistGameState();
+    playTone(700, 'triangle', 0.2, 0.08);
+    showNotice("machine-notice", "🎁 Daily Reward: +25 Paws & Free Instant Spin!", "info");
+    updateSpinCooldownTimer();
+  });
+
+  /* =========================================================
+     SPIN LOGIC & COOLDOWN
+     ========================================================= */
+  let isSpinning = false;
+  const btnSpin = document.getElementById("btn-spin");
+  const btnSpinText = document.getElementById("btn-spin-text");
+  const slotImg = document.getElementById("slot-img");
+  const slotLoading = document.getElementById("slot-loading");
+  const slotLoadingText = document.getElementById("slot-loading-text");
+  const slotEmptyPrompt = document.getElementById("slot-empty-prompt");
+  const machineNotice = document.getElementById("machine-notice");
+
+  const kittyBanner = document.getElementById("kitty-banner");
+  const kittyName = document.getElementById("kitty-name");
+  const kittyRarity = document.getElementById("kitty-rarity");
+  const kittyPower = document.getElementById("kitty-power");
+
+  const valCute = document.getElementById("val-cuteness");
+  const valFluff = document.getElementById("val-fluffiness");
+  const valChaos = document.getElementById("val-chaos");
+  const valBaby = document.getElementById("val-baby");
+  const barCute = document.getElementById("bar-cuteness");
+  const barFluff = document.getElementById("bar-fluffiness");
+  const barChaos = document.getElementById("bar-chaos");
+  const barBaby = document.getElementById("bar-baby");
+
+  function showNotice(targetId, msg, type = "info") {
+    const el = document.getElementById(targetId);
+    el.className = `notice-banner notice-${type}`;
+    el.textContent = msg;
+    el.style.display = "block";
+    setTimeout(() => {
+      el.style.display = "none";
+    }, 5000);
+  }
+
+  function getRemainingCooldownSeconds() {
+    const now = Math.floor(Date.now() / 1000);
+    const last = Math.floor(gameState.lastSpinTimestamp / 1000);
+    const diff = now - last;
+    return diff < SPIN_COOLDOWN_SECONDS ? SPIN_COOLDOWN_SECONDS - diff : 0;
+  }
+
+  function updateSpinCooldownTimer() {
+    if (isSpinning) return;
+    const remaining = getRemainingCooldownSeconds();
+    if (remaining > 0) {
+      btnSpin.disabled = true;
+      btnSpinText.textContent = `SPIN · ${remaining}s`;
+    } else {
+      btnSpin.disabled = false;
+      btnSpinText.textContent = "SPIN";
+    }
+  }
+
+  setInterval(updateSpinCooldownTimer, 1000);
+
+  btnSpin.addEventListener("click", async () => {
+    if (isSpinning) return;
+    if (getRemainingCooldownSeconds() > 0) return;
+
+    if (gameState.cards.length >= MAX_COLLECTION_SIZE) {
+      showNotice("machine-notice", "Collection full (30/30). Remove a kitty or battle first!", "error");
+      return;
+    }
+
+    isSpinning = true;
+    btnSpin.disabled = true;
+    slotEmptyPrompt.style.display = "none";
+    slotLoading.style.display = "flex";
+    slotLoadingText.textContent = "Looking for kitten...";
+    kittyBanner.textContent = "SEARCHING FOR KITTEN...";
+    machineNotice.style.display = "none";
+    playTone(480, 'sine', 0.06);
+
+    try {
+      // 1. Fetch & preload kitten image
+      const imageUrl = await fetchRandomKitten();
+
+      // 2. Visual slowdown
+      slotLoadingText.textContent = "Arriving...";
+      await new Promise(r => setTimeout(r, 350));
+
+      // 3. Generate Card
+      const card = generateCardObject(imageUrl);
+
+      // 4. Reveal Card with smooth animation
+      slotLoading.style.display = "none";
+      slotImg.src = card.imageUrl;
+      slotImg.style.display = "block";
+      slotImg.style.opacity = "0";
+      slotImg.style.transform = "scale(0.92)";
+
+      requestAnimationFrame(() => {
+        slotImg.style.transition = "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
+        slotImg.style.opacity = "1";
+        slotImg.style.transform = "scale(1)";
+      });
+
+      displayCardInMachine(card);
+
+      gameState.cards.unshift(card);
+      kittyBanner.textContent = "YOUR KITTY HAS ARRIVED! 🥹";
+
+      gameState.totalSpins += 1;
+      gameState.lastSpinTimestamp = Date.now();
+      persistGameState();
+      playTone(620, 'triangle', 0.15, 0.08);
+
+    } catch (err) {
+      slotLoading.style.display = "none";
+      if (!slotImg.src) {
+        slotEmptyPrompt.style.display = "block";
+      }
+      kittyBanner.textContent = "COULDN'T FIND A KITTY";
+      const errorMsg = err.message || "Couldn't find a kitty.";
+      showNotice("machine-notice", `${errorMsg} Tap TRY AGAIN!`, "error");
+      btnSpinText.textContent = "TRY AGAIN";
+    } finally {
+      isSpinning = false;
+      updateSpinCooldownTimer();
+    }
+  });
+
+  function displayCardInMachine(card) {
+    kittyName.textContent = card.name;
+    kittyRarity.className = `rarity-pill ${card.rarity.css}`;
+    kittyRarity.textContent = card.rarity.label;
+    kittyPower.textContent = `POWER: ${card.power}`;
+
+    valCute.textContent = card.stats.cuteness;
+    valFluff.textContent = card.stats.fluffiness;
+    valChaos.textContent = card.stats.chaos;
+    valBaby.textContent = card.stats.babyEnergy;
+
+    barCute.style.width = card.stats.cuteness + "%";
+    barFluff.style.width = card.stats.fluffiness + "%";
+    barChaos.style.width = card.stats.chaos + "%";
+    barBaby.style.width = card.stats.babyEnergy + "%";
+  }
+
+  /* =========================================================
+     COLLECTION VIEW & DETAIL MODAL
+     ========================================================= */
+  const collectionGrid = document.getElementById("collection-grid");
+  const cardModalBackdrop = document.getElementById("card-modal-backdrop");
+  const modalBtnClose = document.getElementById("modal-btn-close");
+  const modalCardImg = document.getElementById("modal-card-img");
+  const modalCardName = document.getElementById("modal-card-name");
+  const modalCardRarity = document.getElementById("modal-card-rarity");
+  const modalCardPower = document.getElementById("modal-card-power");
+  const modalStatCute = document.getElementById("modal-stat-cute");
+  const modalStatFluff = document.getElementById("modal-stat-fluff");
+  const modalStatChaos = document.getElementById("modal-stat-chaos");
+  const modalStatBaby = document.getElementById("modal-stat-baby");
+  const modalBarCute = document.getElementById("modal-bar-cute");
+  const modalBarFluff = document.getElementById("modal-bar-fluff");
+  const modalBarChaos = document.getElementById("modal-bar-chaos");
+  const modalBarBaby = document.getElementById("modal-bar-baby");
+  const modalBtnReroll = document.getElementById("modal-btn-reroll");
+  const modalBtnDelete = document.getElementById("modal-btn-delete");
+  const modalBtnBattle = document.getElementById("modal-btn-battle");
+
+  const deleteConfirmBackdrop = document.getElementById("delete-confirm-backdrop");
+  const btnCancelDelete = document.getElementById("btn-cancel-delete");
+  const btnConfirmDelete = document.getElementById("btn-confirm-delete");
+
+  let activeModalCardId = null;
+
+  function renderCollection() {
+    collectionGrid.innerHTML = "";
+    if (gameState.cards.length === 0) {
+      collectionGrid.innerHTML = `
+        <div class="empty-state">
+          <svg class="svg-icon" style="width:36px; height:36px; stroke-width:1.5; color:var(--text-muted);" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>
+          <div style="font-size:13px; font-weight:800; margin-top:6px;">No Kitties Yet</div>
+          <div style="font-size:11px; margin-top:2px;">Spin the machine to adopt your first!</div>
+        </div>
+      `;
+      return;
+    }
+
+    gameState.cards.forEach(card => {
+      const cardEl = document.createElement("div");
+      cardEl.className = "card-thumb";
+
+      const img = document.createElement("img");
+      img.className = "card-thumb-img";
+      img.loading = "lazy";
+      img.src = card.imageUrl;
+      img.alt = card.name;
+
+      const body = document.createElement("div");
+      body.className = "card-thumb-body";
+
+      const name = document.createElement("div");
+      name.className = "card-thumb-name";
+      name.textContent = card.name;
+
+      const pwr = document.createElement("div");
+      pwr.className = "card-thumb-pwr";
+      pwr.textContent = `PWR ${card.power}`;
+
+      body.appendChild(name);
+      body.appendChild(pwr);
+      cardEl.appendChild(img);
+      cardEl.appendChild(body);
+
+      cardEl.addEventListener("click", () => openCardDetailModal(card.id));
+      collectionGrid.appendChild(cardEl);
+    });
+  }
+
+  function openCardDetailModal(cardId) {
+    const card = gameState.cards.find(c => c.id === cardId);
+    if (!card) return;
+    activeModalCardId = card.id;
+
+    modalCardImg.src = card.imageUrl;
+    modalCardName.textContent = card.name;
+    modalCardRarity.className = `rarity-pill ${card.rarity.css}`;
+    modalCardRarity.textContent = card.rarity.label;
+    modalCardPower.textContent = `POWER: ${card.power}`;
+
+    modalStatCute.textContent = card.stats.cuteness;
+    modalStatFluff.textContent = card.stats.fluffiness;
+    modalStatChaos.textContent = card.stats.chaos;
+    modalStatBaby.textContent = card.stats.babyEnergy;
+
+    modalBarCute.style.width = card.stats.cuteness + "%";
+    modalBarFluff.style.width = card.stats.fluffiness + "%";
+    modalBarChaos.style.width = card.stats.chaos + "%";
+    modalBarBaby.style.width = card.stats.babyEnergy + "%";
+
+    cardModalBackdrop.classList.add("show");
+  }
+
+  modalBtnClose.addEventListener("click", () => {
+    cardModalBackdrop.classList.remove("show");
+  });
+
+  // Re-roll stats (costs 15 Paws)
+  modalBtnReroll.addEventListener("click", () => {
+    if (gameState.paws < 15) {
+      alert("Need at least 15 Paws to re-roll stats!");
+      return;
+    }
+    const card = gameState.cards.find(c => c.id === activeModalCardId);
+    if (!card) return;
+
+    gameState.paws -= 15;
+    card.stats = {
+      cuteness: randRange(card.rarity.minStat, card.rarity.maxStat),
+      fluffiness: randRange(card.rarity.minStat, card.rarity.maxStat),
+      chaos: randRange(25, 95),
+      babyEnergy: randRange(card.rarity.minStat, card.rarity.maxStat)
+    };
+    card.power = computePower(card.stats);
+    persistGameState();
+    openCardDetailModal(card.id);
+    renderCollection();
+    playTone(680, 'sine', 0.1, 0.08);
+  });
+
+  // Delete Card Flow
+  modalBtnDelete.addEventListener("click", () => {
+    deleteConfirmBackdrop.classList.add("show");
+  });
+
+  btnCancelDelete.addEventListener("click", () => {
+    deleteConfirmBackdrop.classList.remove("show");
+  });
+
+  btnConfirmDelete.addEventListener("click", () => {
+    gameState.cards = gameState.cards.filter(c => c.id !== activeModalCardId);
+    persistGameState();
+    deleteConfirmBackdrop.classList.remove("show");
+    cardModalBackdrop.classList.remove("show");
+    renderCollection();
+    renderChampionPicker();
+  });
+
+  // Jump to Battle from Modal
+  modalBtnBattle.addEventListener("click", () => {
+    selectedBattleFighterId = activeModalCardId;
+    cardModalBackdrop.classList.remove("show");
+    switchTab("view-battle");
+    updateBattlePlayerView();
+  });
+
+  /* =========================================================
+     HIGH-STAKES BATTLE MECHANIC
+     ========================================================= */
+  let selectedBattleFighterId = null;
+  let currentStrategy = "normal";
+  let isBattling = false;
+
+  const battlePlayerImg = document.getElementById("battle-player-img");
+  const battlePlayerPh = document.getElementById("battle-player-ph");
+  const battlePlayerName = document.getElementById("battle-player-name");
+  const battlePlayerPower = document.getElementById("battle-player-power");
+
+  const battleOpImg = document.getElementById("battle-op-img");
+  const battleOpPh = document.getElementById("battle-op-ph");
+  const battleOpName = document.getElementById("battle-op-name");
+  const battleOpPower = document.getElementById("battle-op-power");
+
+  const battleRoundsBox = document.getElementById("battle-rounds-box");
+  const championPicker = document.getElementById("champion-picker");
+  const btnStartBattle = document.getElementById("btn-start-battle");
+  const btnBattleTxt = document.getElementById("btn-battle-txt");
+  const strategyButtons = document.querySelectorAll(".btn-strategy");
+  const strategyDesc = document.getElementById("strategy-desc");
+
+  strategyButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      strategyButtons.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentStrategy = btn.getAttribute("data-risk");
+      if (currentStrategy === "safe") strategyDesc.textContent = "Safe (-15% variance)";
+      if (currentStrategy === "normal") strategyDesc.textContent = "Balanced (Normal RNG)";
+      if (currentStrategy === "risky") strategyDesc.textContent = "Risky (+25% swing bonus)";
+    });
+  });
+
+  function renderChampionPicker() {
+    championPicker.innerHTML = "";
+    if (gameState.cards.length === 0) {
+      championPicker.innerHTML = `<span style="font-size:11px; color:var(--text-muted);">No kitties available. Adopt some first!</span>`;
+      btnStartBattle.disabled = true;
+      return;
+    }
+
+    if (!selectedBattleFighterId || !gameState.cards.some(c => c.id === selectedBattleFighterId)) {
+      selectedBattleFighterId = gameState.cards[0].id;
+    }
+
+    gameState.cards.forEach(c => {
+      const chip = document.createElement("div");
+      chip.className = `champ-card-chip ${c.id === selectedBattleFighterId ? 'selected' : ''}`;
+
+      const img = document.createElement("img");
+      img.className = "champ-chip-thumb";
+      img.src = c.imageUrl;
+
+      const txt = document.createElement("span");
+      txt.style.fontSize = "11px";
+      txt.style.fontWeight = "800";
+      txt.textContent = c.name;
+
+      chip.appendChild(img);
+      chip.appendChild(txt);
+
+      chip.addEventListener("click", () => {
+        if (isBattling) return;
+        selectedBattleFighterId = c.id;
+        renderChampionPicker();
+        updateBattlePlayerView();
+      });
+
+      championPicker.appendChild(chip);
+    });
+
+    updateBattlePlayerView();
+  }
+
+  function updateBattlePlayerView() {
+    const card = gameState.cards.find(c => c.id === selectedBattleFighterId);
+    if (!card) {
+      battlePlayerImg.style.display = "none";
+      battlePlayerPh.style.display = "block";
+      battlePlayerName.textContent = "Select Kitty";
+      battlePlayerPower.textContent = "PWR --";
+      btnStartBattle.disabled = true;
+      return;
+    }
+
+    battlePlayerPh.style.display = "none";
+    battlePlayerImg.src = card.imageUrl;
+    battlePlayerImg.style.display = "block";
+    battlePlayerName.textContent = card.name;
+    battlePlayerPower.textContent = `PWR ${card.power}`;
+    btnStartBattle.disabled = false;
+  }
+
+  // BATTLE RUNNER
+  btnStartBattle.addEventListener("click", async () => {
+    if (isBattling) return;
+    const playerCard = gameState.cards.find(c => c.id === selectedBattleFighterId);
+    if (!playerCard) return;
+
+    isBattling = true;
+    btnStartBattle.disabled = true;
+    btnBattleTxt.textContent = "SUMMONING OPPONENT...";
+    battleRoundsBox.innerHTML = `
+      <div style="text-align:center; font-size:12px; font-weight:800; color:var(--accent-rose); display:flex; flex-direction:column; align-items:center; gap:8px;">
+        <div class="spinner-ring"></div>
+        <span>Finding opponent kitten...</span>
+      </div>
+    `;
+
+    // 1. Fetch & preload opponent image
+    let opponentCard;
+    try {
+      const opImgUrl = await fetchRandomKitten();
+      opponentCard = generateCardObject(opImgUrl);
+
+      battleOpPh.style.display = "none";
+      battleOpImg.src = opponentCard.imageUrl;
+      battleOpImg.style.display = "block";
+      battleOpName.textContent = opponentCard.name;
+      battleOpPower.textContent = `PWR ${opponentCard.power}`;
+    } catch (e) {
+      battleRoundsBox.innerHTML = `
+        <div style="color:#b91c1c; font-size:12px; font-weight:800; text-align:center;">
+          Couldn't find an opponent kitty.<br>
+          <span style="font-size:10px; color:var(--text-muted);">Your kitty was NOT harmed.</span>
+        </div>
+      `;
+      isBattling = false;
+      btnStartBattle.disabled = false;
+      btnBattleTxt.textContent = "TRY AGAIN";
+      return;
+    }
+
+    btnBattleTxt.textContent = "BATTLE IN PROGRESS...";
+
+    // 2. Play 3 Rounds
+    battleRoundsBox.innerHTML = "";
+    const statKeys = [
+      { key: "cuteness", label: "Cuteness" },
+      { key: "fluffiness", label: "Fluffiness" },
+      { key: "babyEnergy", label: "Baby Energy" }
+    ];
+
+    let playerWins = 0;
+    let opponentWins = 0;
+
+    for (let r = 0; r < 3; r++) {
+      await new Promise(res => setTimeout(res, 850));
+      playTone(450 + r * 80, 'sine', 0.08);
+
+      const statObj = statKeys[r];
+      let pBase = playerCard.stats[statObj.key] || 50;
+      let oBase = opponentCard.stats[statObj.key] || 50;
+
+      let pRoll = randRange(-8, 8);
+      let oRoll = randRange(-8, 8);
+
+      if (currentStrategy === "safe") {
+        pRoll = randRange(-2, 5);
+        oRoll = randRange(-4, 4);
+      } else if (currentStrategy === "risky") {
+        pRoll = Math.random() > 0.4 ? randRange(6, 18) : randRange(-16, -2);
+      }
+
+      const streakBonus = Math.min(gameState.streak * 2, 8);
+      const pScore = Math.max(1, Math.round(pBase + pRoll + streakBonus));
+      const oScore = Math.max(1, Math.round(oBase + oRoll));
+
+      let tagClass = "round-tag-draw";
+      let tagText = "DRAW";
+
+      if (pScore > oScore) {
+        playerWins++;
+        tagClass = "round-tag-win";
+        tagText = `${playerCard.name} Win`;
+      } else if (oScore > pScore) {
+        opponentWins++;
+        tagClass = "round-tag-lose";
+        tagText = `${opponentCard.name} Win`;
+      }
+
+      const row = document.createElement("div");
+      row.className = "round-entry";
+      row.innerHTML = `
+        <span class="round-title">R${r+1}: ${statObj.label}</span>
+        <span class="round-score-compare">${pScore} vs ${oScore}</span>
+        <span class="${tagClass}">${tagText}</span>
+      `;
+      battleRoundsBox.appendChild(row);
+    }
+
+    // 3. Final Resolution
+    await new Promise(res => setTimeout(res, 900));
+
+    if (playerWins > opponentWins) {
+      // VICTORY: Win opponent kitty & streak
+      gameState.streak += 1;
+      if (gameState.streak > gameState.highestStreak) {
+        gameState.highestStreak = gameState.streak;
+      }
+      gameState.totalWins += 1;
+      const multi = getStreakMultiplier(gameState.streak);
+      const pawGain = Math.round(15 * multi);
+      gameState.paws += pawGain;
+
+      let cardAddedMsg = "";
+      if (gameState.cards.length < MAX_COLLECTION_SIZE) {
+        gameState.cards.unshift(opponentCard);
+        cardAddedMsg = `Won ${opponentCard.name}! Added to collection.`;
+      } else {
+        gameState.paws += 20;
+        cardAddedMsg = "Collection full! Converted trophy to +20 Paws.";
+      }
+
+      persistGameState();
+      playTone(720, 'triangle', 0.25, 0.1);
+
+      battleRoundsBox.innerHTML += `
+        <div style="background:#e6f9ed; border:1.5px solid #86efac; border-radius:10px; padding:8px; text-align:center; font-weight:800; font-size:12px; color:#166534; margin-top:4px;">
+          🎉 VICTORY! +${pawGain} Paws<br><span style="font-size:10px; font-weight:700;">${cardAddedMsg}</span>
+        </div>
+      `;
+    } else if (opponentWins > playerWins) {
+      // DEFEAT: Selected Kitty is permanently LOST!
+      gameState.streak = 0;
+      gameState.totalLosses += 1;
+      const lostName = playerCard.name;
+      gameState.cards = gameState.cards.filter(c => c.id !== playerCard.id);
+      selectedBattleFighterId = null;
+      persistGameState();
+      playTone(220, 'sawtooth', 0.35, 0.08);
+
+      battleRoundsBox.innerHTML += `
+        <div style="background:#ffebe9; border:1.5px solid #fca5a5; border-radius:10px; padding:8px; text-align:center; font-weight:800; font-size:12px; color:#991b1b; margin-top:4px;">
+          💔 DEFEAT! ${lostName} was lost in battle.<br><span style="font-size:10px; font-weight:700;">Win streak reset to 0.</span>
+        </div>
+      `;
+    } else {
+      gameState.paws += 5;
+      persistGameState();
+      battleRoundsBox.innerHTML += `
+        <div style="background:#f1f5f9; border:1.5px solid #cbd5e1; border-radius:10px; padding:8px; text-align:center; font-weight:800; font-size:12px; color:#334155; margin-top:4px;">
+          🤝 TIE MATCH! Both kittens are equally cute (+5 Paws).
+        </div>
+      `;
+    }
+
+    renderChampionPicker();
+    renderCollection();
+    isBattling = false;
+    btnStartBattle.disabled = false;
+    btnBattleTxt.textContent = "ENTER BATTLE";
+  });
+
+  /* =========================================================
+     TAB NAVIGATION
+     ========================================================= */
+  const navButtons = document.querySelectorAll(".nav-btn");
+  const viewContents = document.querySelectorAll(".view-content");
+
+  function switchTab(targetId) {
+    navButtons.forEach(btn => {
+      btn.classList.toggle("active", btn.getAttribute("data-tab") === targetId);
+    });
+
+    viewContents.forEach(view => {
+      view.classList.toggle("active", view.id === targetId);
+    });
+
+    if (targetId === "view-collection") {
+      renderCollection();
+    } else if (targetId === "view-battle") {
+      renderChampionPicker();
+    }
+  }
+
+  navButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      playTone(550, 'sine', 0.03);
+      switchTab(btn.getAttribute("data-tab"));
+    });
+  });
+
+  /* =========================================================
+     INITIAL APP SETUP
+     ========================================================= */
+  window.addEventListener("DOMContentLoaded", () => {
+    updateHUD();
+    updateSpinCooldownTimer();
+
+    // If user has saved kitties, restore the latest one in Machine viewport
+    if (gameState.cards.length > 0) {
+      const first = gameState.cards[0];
+      displayCardInMachine(first);
+      slotImg.src = first.imageUrl;
+      slotImg.style.display = "block";
+      slotEmptyPrompt.style.display = "none";
+    }
+  });
+</script>
+</body>
+</html>
